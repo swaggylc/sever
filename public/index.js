@@ -27,19 +27,31 @@ client.getConnection(function (err, connection) {
  */
 router.get("/login", (req, res) => {
   let { account, password } = req.query;
+  console.log(account, password);
   let sql = "SELECT * FROM user WHERE account = ? AND password = ?;";
   client.query(sql, [account, password], (err, result) => {
+    console.log(result);
     if (err) {
       res.send({
         code: 201,
         msg: "账号或密码错误",
       });
-    } else {
+    }
+    if (result.length > 0) {
       let token = jwtObj.createToken(result[0]);
       res.send({
         code: 200,
         msg: "登录成功",
-        token,
+        data: {
+          token,
+          account: result[0].account,
+          username: result[0].username,
+        },
+      });
+    } else {
+      res.send({
+        code: 201,
+        msg: "账号或密码错误",
       });
     }
   });
