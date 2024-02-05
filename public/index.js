@@ -27,8 +27,14 @@ client.getConnection(function (err, connection) {
  */
 router.get("/login", (req, res) => {
   let { account, password } = req.query;
-  console.log(account, password);
-  let sql = "SELECT * FROM user WHERE account = ? AND password = ?;";
+  let sql;
+  if (req.query.type == 0) {
+    // 查询用户表
+    sql = "SELECT * FROM user WHERE account = ? AND password = ?;";
+  } else if (req.query.type == 1) {
+    // 查询管理员表
+    sql = "SELECT * FROM manager_user WHERE account = ? AND password = ?;";
+  }
   client.query(sql, [account, password], (err, result) => {
     console.log(result);
     if (err) {
