@@ -5,7 +5,7 @@ const processSecret = "lucan0417";
 module.exports = {
   createToken: (user) => {
     return jwt.sign({ user }, processSecret, {
-      expiresIn: "24h",
+      expiresIn: 3600 * 24,
     });
   },
   verifyToken: (token) => {

@@ -8,6 +8,7 @@ const app = express();
 
 // 引入公共接口
 const public = require("./public/index.js");
+const user = require("./user/index.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -28,6 +29,8 @@ app.use((req, res, next) => {
 
 // 设置跨域
 app.use(cors());
+// 注册公共接口
+app.use("/public", public);
 
 // token验证中间件
 app.use(
@@ -44,13 +47,24 @@ app.use(
     })
 );
 
-// 注册公共接口
-app.use("/public", public);
-
 // 错误处理中间件
 app.use((err, req, res, next) => {
-  res.send({ err });
+  // 这次错误是由 token 解析失败导致的
+  if (err.name === "UnauthorizedError") {
+    return res.send({
+      status: 401,
+      message: "无效的token",
+      err:err
+    });
+  }
+  res.send({
+    status: 500,
+    message: "未知的错误",
+  });
 });
+
+// 注册公共接口
+app.use("/user", user);
 
 app.listen(3000, () => {
   console.log(
