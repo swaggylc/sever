@@ -43,7 +43,7 @@ app.use(
     })
     .unless({
       // 不需要验证 token 的路径标识符
-      path: ["/public/login"],
+      path: ["/public/login", "/public/register"],
     })
 );
 
@@ -52,13 +52,13 @@ app.use((err, req, res, next) => {
   // 这次错误是由 token 解析失败导致的
   if (err.name === "UnauthorizedError") {
     return res.send({
-      status: 401,
+      code: 401,
       message: "无效的token",
-      err:err
+      err: err,
     });
   }
   res.send({
-    status: 500,
+    code: 500,
     message: "未知的错误",
   });
 });
