@@ -95,7 +95,7 @@ router.post("/register", (req, res) => {
   );
 });
 
-// 下面是保修表的一些接口
+// 下面是报修表的一些接口
 /**
  * @description: 获取保修表数据
  * @param {}
@@ -107,7 +107,7 @@ router.get("/repair_list", (req, res) => {
     if (err) {
       res.send({
         code: 201,
-        msg: "获取保修表数据失败",
+        msg: "获取报修表数据失败",
         err: err,
       });
     } else {
@@ -121,25 +121,106 @@ router.get("/repair_list", (req, res) => {
 });
 
 /**
- * @description: 添加报修信息
+ * @description: 根据uid获取报修信息
  * @param {}
  * @return {}
  */
-router.post("/add_repair", (req, res) => {
-  let { uid, name, account, address, content } = req.body;
-  let sql =
-    "INSERT INTO repair_manage(uid,name,account,address,content) VALUES(?,?,?,?,?)";
-  client.query(sql, [uid, name, account, address, content], (err, result) => {
+router.get("/repair_list/:uid", (req, res) => {
+  let { uid } = req.params;
+  let sql = "SELECT * FROM repair_manage WHERE uid = ?";
+  client.query(sql, [uid], (err, result) => {
     if (err) {
       res.send({
         code: 201,
-        msg: "添加报修信息失败",
+        msg: "获取报修信息失败",
         err: err,
       });
     } else {
       res.send({
         code: 200,
-        msg: "添加报修信息成功",
+        msg: "获取报修信息成功",
+        data: result,
+      });
+    }
+  });
+});
+
+/**
+ * @description: 添加报修信息
+ * @param {}
+ * @return {}
+ */
+router.post("/add_repair", (req, res) => {
+  let { uid, name, account, address, content, createTime } = req.body;
+  let sql =
+    "INSERT INTO repair_manage(uid,name,account,address,content,create_time) VALUES(?,?,?,?,?,?)";
+  client.query(
+    sql,
+    [uid, name, account, address, content, createTime],
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "添加报修信息失败",
+          err: err,
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "添加报修信息成功",
+        });
+      }
+    }
+  );
+});
+
+/**
+ * @description: 更改报修状态的接口
+ * @param {}
+ * @return {}
+ */
+router.post("/change_repair_status", (req, res) => {
+  let { repairNumber, status } = req.body;
+  let sql = "UPDATE repair_manage SET status = ? WHERE repair_number = ?";
+  client.query(sql, [status, repairNumber], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "更改报修状态失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "更改报修状态成功",
+      });
+    }
+  });
+});
+
+/**
+ * @description: 评价接口
+ * @param {}
+ * @return {}
+ */
+router.post("/appraise", (req, res) => {
+  let { repairNumber, appraise, rate } = req.body;
+  if (appraise == "") {
+    appraise = "该用户未填写评价，默认好评";
+  }
+  let sql =
+    "UPDATE repair_manage SET appraise = ?,rate=? WHERE repair_number = ?";
+  client.query(sql, [appraise, rate, repairNumber], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "评价失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "评价成功",
       });
     }
   });
