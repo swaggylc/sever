@@ -68,7 +68,7 @@ router.get("/search_user", (req, res) => {
   let params = [];
 
   if (name) {
-    sql += " AND username LIKE ?";
+    sql += " AND name LIKE ?";
     params.push(`%${name}%`);
   }
 

@@ -55,6 +55,7 @@ router.get("/login", (req, res) => {
           type: result[0].type,
           uid: result[0].uid,
           name: result[0].name,
+          address:result[0].address
         },
       });
     } else {
@@ -209,7 +210,7 @@ router.post("/appraise", (req, res) => {
     appraise = "该用户未填写评价，默认好评";
   }
   let sql =
-    "UPDATE repair_manage SET appraise = ?,rate=? WHERE repair_number = ?";
+    "UPDATE repair_manage SET appraise = ?,rate=?,appraise_status = 1 WHERE repair_number = ?";
   client.query(sql, [appraise, rate, repairNumber], (err, result) => {
     if (err) {
       res.send({
