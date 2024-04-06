@@ -55,7 +55,7 @@ router.get("/login", (req, res) => {
           type: result[0].type,
           uid: result[0].uid,
           name: result[0].name,
-          address:result[0].address
+          address: result[0].address,
         },
       });
     } else {
@@ -94,6 +94,31 @@ router.post("/register", (req, res) => {
       }
     }
   );
+});
+
+// 下面是echarts图表的一些接口
+/**
+ * @description: 返回男女用户个数
+ * @param {}
+ * @return {}
+ */
+router.get("/sex_ratio", (req, res) => {
+  let sql = "SELECT COUNT(sex) AS sex_count,sex FROM user GROUP BY sex";
+  client.query(sql, (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "获取男女用户个数失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "获取男女用户个数成功",
+        data: result,
+      });
+    }
+  });
 });
 
 // 下面是报修表的一些接口
