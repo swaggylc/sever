@@ -137,6 +137,23 @@ router.get("/repair_list", (req, res) => {
         err: err,
       });
     } else {
+      // 找到type
+      result.forEach((item) => {
+        item.rate = Number(item.rate);
+        if (item.type == 1) {
+          item.type = "小区卫生";
+        } else if (item.type == 2) {
+          item.type = "花坛绿化";
+        } else if (item.type == 3) {
+          item.type = "管道堵塞";
+        } else if (item.type == 4) {
+          item.type = "公共水电";
+        } else if (item.type == 5) {
+          item.type = "楼道电梯";
+        } else if (item.type == 6) {
+          item.type = "其他";
+        }
+      });
       res.send({
         code: 200,
         msg: "获取保修表数据成功",
@@ -177,12 +194,12 @@ router.get("/repair_list/:uid", (req, res) => {
  * @return {}
  */
 router.post("/add_repair", (req, res) => {
-  let { uid, name, account, address, content, createTime } = req.body;
+  let { uid, name, account, address, content, createTime, type } = req.body;
   let sql =
-    "INSERT INTO repair_manage(uid,name,account,address,content,create_time) VALUES(?,?,?,?,?,?)";
+    "INSERT INTO repair_manage(uid,name,account,address,content,create_time,type) VALUES(?,?,?,?,?,?,?)";
   client.query(
     sql,
-    [uid, name, account, address, content, createTime],
+    [uid, name, account, address, content, createTime, type],
     (err, result) => {
       if (err) {
         res.send({
@@ -225,6 +242,66 @@ router.post("/change_repair_status", (req, res) => {
 });
 
 /**
+ * @description: 报修条件查询接口
+ * @param {}
+ * @return {}
+ */
+router.post("/repair_list/condition", (req, res) => {
+  let { type, status, repair_number } = req.body;
+  // 拼接查询条件
+  let sql = "SELECT * FROM repair_manage WHERE 1=1";
+  let params = [];
+  if (type) {
+    sql += " AND type = ?";
+    params.push(type);
+  }
+  if (status === 0 || status === 1 || status === 2) {
+    sql += " AND status = ?";
+    params.push(status);
+  }
+  if (repair_number) {
+    sql += " AND repair_number = ?";
+    params.push(repair_number);
+  }
+  client.query(sql, params, (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "查询失败",
+      });
+    }
+    if (result.length > 0) {
+      result.forEach((item) => {
+        item.rate = Number(item.rate);
+        if (item.type == 1) {
+          item.type = "小区卫生";
+        } else if (item.type == 2) {
+          item.type = "花坛绿化";
+        } else if (item.type == 3) {
+          item.type = "管道堵塞";
+        } else if (item.type == 4) {
+          item.type = "公共水电";
+        } else if (item.type == 5) {
+          item.type = "楼道电梯";
+        } else if (item.type == 6) {
+          item.type = "其他";
+        }
+      });
+      res.send({
+        code: 200,
+        msg: "查询成功",
+        data: result,
+      });
+    } else {
+      res.send({
+        code: 201,
+        msg: "查询失败",
+      });
+    }
+  });
+});
+
+/**
  * @description: 评价接口
  * @param {}
  * @return {}
@@ -250,6 +327,76 @@ router.post("/appraise", (req, res) => {
       });
     }
   });
+});
+// 访客登记表相关
+/**
+ * @description: 查询所有访客记录
+ * @param {}
+ * @return {}
+ */
+router.get("/get_visitor_list", (req, res) => {
+  let sql = "SELECT * FROM visitor_log";
+  client.query(sql, (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "查询失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "查询成功",
+        data: result,
+      });
+    }
+  });
+});
+
+/**
+ * @description: 添加一条访客记录
+ * @param {}
+ * @return {}
+ */
+router.post("/add_visitor_check", (req, res) => {
+  let {
+    name,
+    telNumber,
+    enterTime,
+    content,
+    visitorNumber,
+    address,
+    manager,
+    other,
+  } = req.body;
+  let sql =
+    "INSERT INTO visitor_log(name,tel_number,enter_time,content,visitor_number,address,manager,other) VALUES(?,?,?,?,?,?,?,?)";
+  client.query(
+    sql,
+    [
+      name,
+      telNumber,
+      enterTime,
+      content,
+      visitorNumber,
+      address,
+      manager,
+      other,
+    ],
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "添加失败",
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "添加成功",
+        });
+      }
+    }
+  );
 });
 
 module.exports = router;
