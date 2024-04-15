@@ -9,6 +9,7 @@ const app = express();
 // 引入公共接口
 const public = require("./public/index.js");
 const user = require("./user/index.js");
+const manager = require("./manager/index.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -65,6 +66,7 @@ app.use((err, req, res, next) => {
 
 // 注册公共接口
 app.use("/user", user);
+app.use("/manager", manager);
 
 app.listen(3000, () => {
   console.log(

@@ -15,9 +15,24 @@ client.getConnection(function (err, connection) {
   if (err) {
     console.log("连接失败:" + err.message);
   } else {
-    console.log("连接数据库成功--home");
+    console.log("连接数据库成功--manager");
   }
 });
 
+// 获取所有管理员信息
+router.get("/get_manager", (req, res) => {
+  const sql = "SELECT * FROM manager_user";
+  client.query(sql, (err, result) => {
+    if (err) {
+      res.send({ code: 201, message: "获取管理员信息失败！" });
+    } else {
+      res.send({
+        code: 200,
+        message: "获取管理员信息成功！",
+        data: result,
+      });
+    }
+  });
+});
 
 module.exports = router;

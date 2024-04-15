@@ -20,6 +20,9 @@ client.getConnection(function (err, connection) {
   }
 });
 
+// 手机验证码
+let phoneCode;
+
 /**
  * @description: 登录接口
  * @param {}
@@ -388,6 +391,7 @@ router.post("/add_visitor_check", (req, res) => {
         res.send({
           code: 201,
           msg: "添加失败",
+          err: err,
         });
       } else {
         res.send({
@@ -397,6 +401,155 @@ router.post("/add_visitor_check", (req, res) => {
       }
     }
   );
+});
+
+/**
+ * @description: 修改访客记录
+ * @param {}
+ * @return {}
+ */
+router.post("/update_visitor", (req, res) => {
+  let { logId, outTime, noOutResult, other } = req.body;
+  // 如果没有填写离开时间，则离开状态还是2，不用修改
+  if (outTime == null) {
+    let sql =
+      "UPDATE visitor_log SET out_time = ?,no_out_result = ?,other = ? WHERE log_id = ?";
+    client.query(sql, [outTime, noOutResult, other, logId], (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "修改失败",
+          err: err,
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "修改成功",
+        });
+      }
+    });
+  }
+  // 如果填写了离开时间，则离开状态为1
+  if (outTime != null) {
+    let sql =
+      "UPDATE visitor_log SET out_time = ?,no_out_result = ?,other = ?,out_status=? WHERE log_id = ?";
+    client.query(
+      sql,
+      [outTime, noOutResult, other, 1, logId],
+      (err, result) => {
+        if (err) {
+          res.send({
+            code: 201,
+            msg: "修改失败",
+            err: err,
+          });
+        } else {
+          res.send({
+            code: 200,
+            msg: "修改成功",
+          });
+        }
+      }
+    );
+  }
+});
+
+/**
+ * @description: 访客记录删除接口
+ * @param {}
+ * @return {}
+ */
+router.post("/delete_visitor", (req, res) => {
+  let { logId, account, reqCode } = req.body;
+  console.log(logId, account, reqCode);
+  console.log(phoneCode);
+  const deleteHandler = (logId) => {
+    let sql = "DELETE FROM visitor_log WHERE log_id = ?";
+    client.query(sql, [logId], (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "删除失败",
+          err: err,
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "删除成功",
+        });
+      }
+    });
+  };
+  if (account == "15180595913") {
+    // 直接删除
+    deleteHandler(logId);
+  } else {
+    // 对比验证码
+    if (reqCode == phoneCode) {
+      // 直接删除
+      deleteHandler(logId);
+    } else {
+      res.send({
+        code: 201,
+        msg: "验证码错误",
+      });
+    }
+  }
+});
+
+/**
+ * @description: 获取验证码接口
+ * @param {}
+ * @return {}
+ */
+router.get("/get_code", (req, res) => {
+  // 生成随机6位数验证码
+  let code = Math.random().toString().slice(-6);
+  phoneCode = code;
+  res.send({
+    code: 200,
+    msg: "获取验证码成功",
+    data: code,
+  });
+});
+
+/**
+ * @description: 搜索访客的接口
+ * @param {}
+ * @return {}
+ */
+router.post("/search_visitor", (req, res) => {
+  let { name, manager, status } = req.body;
+  let sql = "SELECT * FROM visitor_log WHERE 1=1";
+  let params = [];
+  if (name) {
+    sql += " AND name = ?";
+    params.push(name);
+  }
+  if (manager) {
+    sql += " AND manager = ?";
+    params.push(manager);
+  }
+  if (status === '1' || status === '2') {
+    sql += " AND out_status = ?";
+    params.push(status);
+  }
+  console.log(sql, params);
+  client.query(sql, params, (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "查询失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "查询成功",
+        data: result,
+      });
+    }
+  });
 });
 
 module.exports = router;
