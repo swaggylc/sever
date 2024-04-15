@@ -534,7 +534,6 @@ router.post("/search_visitor", (req, res) => {
     sql += " AND out_status = ?";
     params.push(status);
   }
-  console.log(sql, params);
   client.query(sql, params, (err, result) => {
     if (err) {
       res.send({
