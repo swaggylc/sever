@@ -530,7 +530,7 @@ router.post("/search_visitor", (req, res) => {
     sql += " AND manager = ?";
     params.push(manager);
   }
-  if (status === '1' || status === '2') {
+  if (status === "1" || status === "2") {
     sql += " AND out_status = ?";
     params.push(status);
   }
@@ -546,6 +546,32 @@ router.post("/search_visitor", (req, res) => {
         code: 200,
         msg: "查询成功",
         data: result,
+      });
+    }
+  });
+});
+
+// 投诉管理相关接口
+/**
+ * @description: 用户新增投诉
+ * @param {}
+ * @return {}
+ */
+router.post("/add_complain", (req, res) => {
+  let { name, account, content, complainTime } = req.body;
+  let sql =
+    "INSERT INTO complain_manage(name,account,content,complain_time) VALUES(?,?,?,?)";
+  client.query(sql, [name, account, content, complainTime], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "添加投诉失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "添加投诉成功",
       });
     }
   });
