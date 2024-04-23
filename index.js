@@ -30,8 +30,7 @@ app.use((req, res, next) => {
 
 // 设置跨域
 app.use(cors());
-// 注册公共接口
-app.use("/public", public);
+
 
 // token验证中间件
 app.use(
@@ -65,6 +64,7 @@ app.use((err, req, res, next) => {
 });
 
 // 注册公共接口
+app.use("/public", public);
 app.use("/user", user);
 app.use("/manager", manager);
 

@@ -461,8 +461,6 @@ router.post("/update_visitor", (req, res) => {
  */
 router.post("/delete_visitor", (req, res) => {
   let { logId, account, reqCode } = req.body;
-  console.log(logId, account, reqCode);
-  console.log(phoneCode);
   const deleteHandler = (logId) => {
     let sql = "DELETE FROM visitor_log WHERE log_id = ?";
     client.query(sql, [logId], (err, result) => {
@@ -553,25 +551,140 @@ router.post("/search_visitor", (req, res) => {
 
 // 投诉管理相关接口
 /**
- * @description: 用户新增投诉
+ * @description: 获取所有投诉信息
  * @param {}
  * @return {}
  */
-router.post("/add_complain", (req, res) => {
-  let { name, account, content, complainTime } = req.body;
-  let sql =
-    "INSERT INTO complain_manage(name,account,content,complain_time) VALUES(?,?,?,?)";
-  client.query(sql, [name, account, content, complainTime], (err, result) => {
+router.get("/get_complain_list", (req, res) => {
+  let sql = "SELECT * FROM complain_manage";
+  client.query(sql, (err, result) => {
     if (err) {
       res.send({
         code: 201,
-        msg: "添加投诉失败",
+        msg: "查询失败",
         err: err,
       });
     } else {
       res.send({
         code: 200,
-        msg: "添加投诉成功",
+        msg: "查询成功",
+        data: result,
+      });
+    }
+  });
+});
+
+/**
+ * @description: 用户新增投诉
+ * @param {}
+ * @return {}
+ */
+router.post("/add_complain", (req, res) => {
+  let { name, account, manager, content, complainTime, other } = req.body;
+  let sql =
+    "INSERT INTO complain_manage(name,account,manager,content,complain_time,other) VALUES(?,?,?,?,?,?)";
+  client.query(
+    sql,
+    [name, account, manager, content, complainTime, other],
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "添加投诉失败",
+          err: err,
+        });
+      } else {
+        //查询manager_user表，找到对应的管理员
+        let sql = "SELECT * FROM manager_user WHERE uid = ?";
+        client.query(sql, [manager], (err, result) => {
+          // 一定能查询到
+          let managerName = result[0].name;
+          // 将这个名字更新到投诉表中
+          let sql =
+            "UPDATE complain_manage SET manager_name = ? WHERE manager = ?";
+          client.query(sql, [managerName, manager], (err, result) => {
+            // 这个也一定能更新成功
+            res.send({
+              code: 200,
+              msg: "添加投诉成功",
+            });
+          });
+        });
+      }
+    }
+  );
+});
+
+/**
+ * @description: 根据联系方式查询投诉信息(用户使用)
+ * @param {}
+ * @return {}
+ */
+router.get("/my_complain/:account", (req, res) => {
+  let { account } = req.params;
+  let sql = "SELECT * FROM complain_manage WHERE account = ?";
+  client.query(sql, [account], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "获取投诉信息失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "获取投诉信息成功",
+        data: result,
+      });
+    }
+  });
+});
+
+/**
+ * @description: 根据id删除某条投诉信息
+ * @param {}
+ * @return {}
+ */
+router.post("/delete_complain", (req, res) => {
+  let { id } = req.body;
+  let sql = "DELETE FROM complain_manage WHERE id = ?";
+  client.query(sql, [id], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "删除失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "删除成功",
+      });
+    }
+  });
+});
+
+/**
+ * @description: 更新投诉信息是否首次投诉状态
+ * @param {}
+ * @return {}
+ */
+router.post("/update_complain_status", (req, res) => {
+  let { id } = req.body;
+  // 同时也要把状态改为未跟进
+  let sql =
+    "UPDATE complain_manage SET repeat_status = 2,status=1 WHERE id = ?";
+  client.query(sql, [id], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "更新失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "更新成功",
       });
     }
   });
