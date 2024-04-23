@@ -39,7 +39,6 @@ router.get("/login", (req, res) => {
     sql = "SELECT * FROM manager_user WHERE account = ? AND password = ?;";
   }
   client.query(sql, [account, password], (err, result) => {
-    console.log(result);
     if (err) {
       res.send({
         code: 201,
@@ -59,6 +58,7 @@ router.get("/login", (req, res) => {
           uid: result[0].uid,
           name: result[0].name,
           address: result[0].address,
+          sex: result[0].sex
         },
       });
     } else {
@@ -688,6 +688,73 @@ router.post("/update_complain_status", (req, res) => {
       });
     }
   });
+});
+
+/**
+ * @description: 更新投诉信息
+ * @param {}
+ * @return {}
+ */
+router.post("/update_complain", (req, res) => {
+  let { id, level, status, result } = req.body;
+  let sql =
+    "UPDATE complain_manage SET level = ?, status = ?,result=? WHERE id = ?";
+  client.query(sql, [level, status, result, id], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "更新失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "更新成功",
+      });
+    }
+  });
+});
+
+// 账号设置
+/**
+ * @description: 更新用户账号信息
+ * @param {}
+ * @return {}
+ */
+router.post("/account_setting", (req, res) => {
+  let { type } = req.body;
+  let sql = "";
+  // 用户
+  if (type == 0) {
+    let { account, password, username, name, address, sex, uid } = req.body;
+    let arrayParams = [account, password, username, name, address, sex, uid];
+    sql =
+      "UPDATE user SET account = ?, password = ?,username=?,name=?,address=?,sex=? WHERE uid = ?";
+    accountSet(sql, arrayParams);
+  } else if (type == 1) {
+    let { account, password, username, name, uid } = req.body;
+    let arrayParams = [account, password, username, name, uid];
+    sql =
+      "UPDATE manager_user SET account = ?, password = ?,username=?,name=? WHERE uid = ?";
+    accountSet(sql, arrayParams);
+  }
+
+  const accountSet = (sql, arrayParams) => {
+    client.query(sql, arrayParams, (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "更新失败",
+          err: err,
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "更新成功",
+        });
+      }
+    });
+  };
 });
 
 module.exports = router;
