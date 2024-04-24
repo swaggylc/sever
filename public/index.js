@@ -58,7 +58,7 @@ router.get("/login", (req, res) => {
           uid: result[0].uid,
           name: result[0].name,
           address: result[0].address,
-          sex: result[0].sex
+          sex: result[0].sex,
         },
       });
     } else {
@@ -755,6 +755,60 @@ router.post("/account_setting", (req, res) => {
       }
     });
   };
+});
+
+// 下面是通知相关
+/**
+ * @description: 获取所有通知
+ * @param {}
+ * @return {}
+ */
+router.get("/get_notice", (req, res) => {
+  let sql = "SELECT * FROM notice_manage";
+  client.query(sql, (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        msg: "获取通知失败",
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        msg: "获取通知成功",
+        data: result,
+      });
+    }
+  });
+});
+
+/**
+ * @description: 添加一则通知
+ * @param {}
+ * @return {}
+ */
+router.post("/add_notice", (req, res) => {
+  let { title, content, createTime, author, level } = req.body;
+  let sql =
+    "INSERT INTO notice_manage(title,content,create_time,author, level) VALUES(?,?,?,?,?)";
+  client.query(
+    sql,
+    [title, content, createTime, author, level],
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 201,
+          msg: "添加通知失败",
+          err: err,
+        });
+      } else {
+        res.send({
+          code: 200,
+          msg: "添加通知成功",
+        });
+      }
+    }
+  );
 });
 
 module.exports = router;
