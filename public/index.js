@@ -788,12 +788,12 @@ router.get("/get_notice", (req, res) => {
  * @return {}
  */
 router.post("/add_notice", (req, res) => {
-  let { title, content, createTime, author, level } = req.body;
+  let { title, content, createTime, author, level, text } = req.body;
   let sql =
-    "INSERT INTO notice_manage(title,content,create_time,author, level) VALUES(?,?,?,?,?)";
+    "INSERT INTO notice_manage(title,content,create_time,author, level,text) VALUES(?,?,?,?,?,?)";
   client.query(
     sql,
-    [title, content, createTime, author, level],
+    [title, content, createTime, author, level, text],
     (err, result) => {
       if (err) {
         res.send({
@@ -809,6 +809,29 @@ router.post("/add_notice", (req, res) => {
       }
     }
   );
+});
+
+/**
+ * @description: 通过id查询通知
+ * @param {}
+ * @return {}
+ */
+router.get("/search_notice/:id", (req, res) => {
+  let { id } = req.params;
+  let sql = "SELECT * FROM notice_manage WHERE id = ?";
+  client.query(sql, [id], (err, result) => {
+    if (err) {
+      res.send({
+        code: 201,
+        err: err,
+      });
+    } else {
+      res.send({
+        code: 200,
+        data: result[0],
+      });
+    }
+  });
 });
 
 module.exports = router;
