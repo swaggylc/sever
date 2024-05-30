@@ -722,23 +722,6 @@ router.post("/update_complain", (req, res) => {
  * @return {}
  */
 router.post("/account_setting", (req, res) => {
-  let { type } = req.body;
-  let sql = "";
-  // 用户
-  if (type == 0) {
-    let { account, password, username, name, address, sex, uid } = req.body;
-    let arrayParams = [account, password, username, name, address, sex, uid];
-    sql =
-      "UPDATE user SET account = ?, password = ?,username=?,name=?,address=?,sex=? WHERE uid = ?";
-    accountSet(sql, arrayParams);
-  } else if (type == 1) {
-    let { account, password, username, name, uid } = req.body;
-    let arrayParams = [account, password, username, name, uid];
-    sql =
-      "UPDATE manager_user SET account = ?, password = ?,username=?,name=? WHERE uid = ?";
-    accountSet(sql, arrayParams);
-  }
-
   const accountSet = (sql, arrayParams) => {
     client.query(sql, arrayParams, (err, result) => {
       if (err) {
@@ -755,6 +738,35 @@ router.post("/account_setting", (req, res) => {
       }
     });
   };
+
+  let { type } = req.body;
+  let sql = "";
+  // 用户
+  if (type == 0) {
+    let { account, password, username, name, address, sex, uid } = req.body;
+    let arrayParams = [account, password, username, name, address, sex, uid];
+    if (password == "") {
+      arrayParams = [account, username, name, address, sex, uid];
+      sql =
+        "UPDATE user SET account = ?,username=?,name=?,address=?,sex=? WHERE uid = ?";
+    } else {
+      sql =
+        "UPDATE user SET account = ?, password = ?,username=?,name=?,address=?,sex=? WHERE uid = ?";
+    }
+    accountSet(sql, arrayParams);
+  } else if (type == 1) {
+    let { account, password, username, name, uid } = req.body;
+    let arrayParams = [account, password, username, name, uid];
+    if (password == "") {
+      arrayParams = [account, username, name, uid];
+      sql =
+        "UPDATE manager_user SET account = ?,username=?,name=? WHERE uid = ?";
+    } else {
+      sql =
+        "UPDATE manager_user SET account = ?, password = ?,username=?,name=? WHERE uid = ?";
+    }
+    accountSet(sql, arrayParams);
+  }
 });
 
 // 下面是通知相关
