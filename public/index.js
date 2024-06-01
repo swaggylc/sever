@@ -814,9 +814,22 @@ router.post("/add_notice", (req, res) => {
           err: err,
         });
       } else {
-        res.send({
-          code: 200,
-          msg: "添加通知成功",
+        let sql = "SELECT * FROM notice_manage";
+        client.query(sql, (err, result) => {
+          if (err) {
+            res.send({
+              code: 201,
+              msg: "添加通知失败",
+              err: err,
+            });
+          } else {
+            let id = result[result.length - 1].id;
+            res.send({
+              code: 200,
+              msg: "添加通知成功",
+              id: id,
+            });
+          }
         });
       }
     }
